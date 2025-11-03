@@ -14,3 +14,4 @@ matplotlib>=3.7.0
 
 # Optional but useful
 python-dotenv>=1.0.1
+passlib==1.7.4

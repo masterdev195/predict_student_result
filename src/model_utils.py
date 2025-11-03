@@ -4,6 +4,24 @@ from src.Config import (FINANCIAL_ORDER,NOMINAL_COLS,COLS_TO_DROP)
 
 def preprocess_data(df: pd.DataFrame, is_training: bool = True) -> pd.DataFrame:
       df_copy = df.copy()
+      
+      # Chuẩn hóa tên cột
+      df_copy.columns = df_copy.columns.str.lower().str.strip()
+
+      # Thay missing values
+      df_copy = df_copy.fillna(
+            {
+                  "finanacial_state" :"medium",
+                  "major" : "Unknown",
+                  "addmission_type": "Other",
+                  "gender": "Other"
+            }
+      )
+
+      # chuyển gpa về chuẩn dạng số
+      gpa_cols = [c for c in df_copy.columns if c.startswith("gpa")]
+      for col in gpa_cols:
+            df_copy[col] = pd.to_numeric(df_copy[col], errors="coerce").fillna(0)
 
       # ordinal Encoding 
       df_copy['financial_state_encoded'] = df_copy['financial_state'].map(FINANCIAL_ORDER)

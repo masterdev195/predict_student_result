@@ -1,9 +1,20 @@
 from flask import Flask, request, jsonify
 import joblib
+from dotenv import load_dotenv
+from pathlib import Path
 import os
 
 from src.Config import MODEL_PATH, FEATURES_PATH
 from src.model_utils import Predict_student_status
+
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(env_path)
+print("DEBUG ENV PORT =", os.getenv("PORT"))
+print("DEBUG ENV HOST =", os.getenv("HOST"))
+HOST  = os.getenv("HOST")
+PORT = int(os.getenv("PORT"))
+
+app = Flask(__name__)
 
 try:
       LOADED_MODEL = joblib.load(MODEL_PATH)
@@ -15,7 +26,7 @@ except FileNotFoundError:
 
 # Thiết lập ứng dụng Flask
 
-app = Flask(__name__)
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -46,5 +57,5 @@ def predict():
 
 if __name__ == '__main__':
     print("Ứng dụng dự đoán bắt đầu chạy tại http://127.0.0.1:5000/predict")
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host=HOST, port=PORT)
 

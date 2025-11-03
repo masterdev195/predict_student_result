@@ -1,8 +1,9 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
 import joblib
 import os
+
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
 
 from src.Config import DATA_FILE, MODEL_PATH, FEATURES_PATH
 from src.model_utils import preprocess_data

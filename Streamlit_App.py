@@ -2,7 +2,7 @@ import streamlit as st
 import joblib 
 import pandas as pd
 from src.model_utils import Predict_student_status
-from src.Config import MODEL_PATH,FEATURES_PATH
+from src.Config import MODEL_PATH,FEATURES_PATH, Get_Major_List, Get_Admission_type_List
 
 @st.cache_resource
 def load_model():
@@ -16,13 +16,24 @@ model, features = load_model()
 st.title("Dự đoán khả năng tốt nghiệp đúng hạn")
 st.title("Nhập thông tin sinh viên bên dưới để dự đoán khả năng tốt nghiệp.")
 gender = st.selectbox("Giới tính", ["Male", "Female"])
-major = st.text_input("Ngành học (vd: IT, Business, Education)")
-admission_type = st.text_input("Kiểu xét tuyển(vd: tuyển thảng, thi,...)")
+
+majors = Get_Major_List()
+major = st.selectbox(
+ "Ngành học",
+ majors
+)
+
+admissions_type = Get_Admission_type_List()
+admission_type = st.selectbox(
+      "Kiểu xét tuyển",
+      admissions_type
+)
+
 financial_state = st.selectbox(
       "Điều kiện tài chính", ["Difficult", "Average", "Stable"]
 )
 
-st.subheader("GPA theotuwngf năm")
+st.subheader("GPA theo từng năm")
 
 Year = st.selectbox(
       "Bạn đang là sinh viên năm mấy", 
@@ -31,15 +42,12 @@ Year = st.selectbox(
 )
 
 gpa_year1 = gpa_year2 = gpa_year3 =gpa_year4 =0.0
-if Year >=1:
-      gpa_year1 = st.number_input("GPA năm 1", min_value = 0.0, max_value =4.0, step=0.01)
 if Year >=2:
-      gpa_year2 = st.number_input("GPA năm 2", min_value = 0.0, max_value =4.0, step=0.01)
+      gpa_year1 = st.number_input("GPA năm 1", min_value = 0.0, max_value =4.0, step=0.01)
 if Year >=3:
-      gpa_year3 = st.number_input("GPA năm 3", min_value = 0.0, max_value =4.0, step=0.01)
+      gpa_year2 = st.number_input("GPA năm 2", min_value = 0.0, max_value =4.0, step=0.01)
 if Year >=4:
-      gpa_year4 = st.number_input("GPA năm 4", min_value = 0.0, max_value =4.0, step=0.01)
-
+      gpa_year3 = st.number_input("GPA năm 3", min_value = 0.0, max_value =4.0, step=0.01)
 
 
 if st.button("Dự đoán"):
