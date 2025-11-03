@@ -1,25 +1,25 @@
-# Created by venv; see https://docs.python.org/3/library/venv.html
-# Ignore environment config
-venv/
-ENV/
-.env
-.venv/
+# # Created by venv; see https://docs.python.org/3/library/venv.html
+# # Ignore environment config
+# venv/
+# ENV/
+# .env
+# .venv/
 
-# Python cache
-.env
-*.env
+# # Python cache
+# .env
+# *.env
 
-__pycache__/
-*.pyc
-*.pyo
-# file csv
-data/*.csv
+# __pycache__/
+# *.pyc
+# *.pyo
+# # file csv
+# data/*.csv
 
-#model
-model/*.pkl
+# #model
+# model/*.pkl
 
-#IDE
-.vscode/
-.idel/
+# #IDE
+# .vscode/
+# .idel/
 
-.straeamlit/
+# .straeamlit/

@@ -2,14 +2,20 @@ import streamlit as st
 import joblib 
 import pandas as pd
 from src.model_utils import Predict_student_status
-from src.Config import MODEL_PATH,FEATURES_PATH, Get_Major_List, Get_Admission_type_List
+from src.Config import (MODEL_PATH,FEATURES_PATH, Get_Major_List, Get_Admission_type_List, 
+                        REG_MODEL_GPA4_PATH,REG_MODEL_GPA3_PATH,REG_MODEL_GPA2_PATH)
+
 
 @st.cache_resource
 def load_model():
       model = joblib.load(MODEL_PATH)
       features = joblib.load(FEATURES_PATH)
-      return model,features
-model, features = load_model()
+      # load model  hồi quy 
+      reg_gpa2 = joblib.load(REG_MODEL_GPA2_PATH)
+      reg_gpa3 = joblib.load(REG_MODEL_GPA3_PATH)
+      reg_gpa4 = joblib.load(REG_MODEL_GPA4_PATH)
+      return model,features, reg_gpa2, reg_gpa3, reg_gpa4
+model, features , reg_gpa2, reg_gpa3, reg_gpa4 = load_model()
 
 """ Giao diện web """
  
@@ -41,7 +47,7 @@ Year = st.selectbox(
       format_func=lambda x: f"Năm {x}"
 )
 
-gpa_year1 = gpa_year2 = gpa_year3 =gpa_year4 =0.0
+gpa_year1 = gpa_year2 = gpa_year3 =gpa_year4 = None
 if Year >=2:
       gpa_year1 = st.number_input("GPA năm 1", min_value = 0.0, max_value =4.0, step=0.01)
 if Year >=3:
@@ -74,7 +80,10 @@ if st.button("Dự đoán"):
             result = Predict_student_status(
                   new_data_dict= data,
                   model=model,
-                  training_features= features
+                  training_features= features,
+                  reg_gpa2 = reg_gpa2,
+                  reg_gpa3 = reg_gpa3,
+                  reg_gpa4 = reg_gpa4
             )
 
             #hiển thị
