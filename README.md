@@ -58,22 +58,29 @@ pip install -r requirements.txt
 streamlit run Streamlit_App.py
 ```
 
-Ứng dụng sẽ chạy tại:
-👉 [http://localhost:8501/](http://localhost:8501/)
-
----
-
+## thứ tự chạy 
 ## 🎯 Huấn luyện mô hình
 
 ```bash
 python -m src.train
 ```
+## chạy IPA
+```bash
+python -m src.App
+```
+## chạy streamlit
+```bash
+streamlit run Streamlit_App.py
+```
+
+
+
 
 File mô hình sau khi huấn luyện sẽ được lưu tại:
 
 ```
 model/
-    student_model.pkl
+    rf_graduate_model.pkl
 ```
 
 ---
@@ -88,16 +95,17 @@ Predict_Student_Result/
 ├── README.md
 │
 ├── src/
-│   ├── train.py              # Xử lý & huấn luyện mô hình
+│   ├── App.py              # Chạy IPA flask 
 │   ├── Config.py             # Load dữ liệu, load features
-│   ├── predict.py            # Hàm dự đoán từ model
-│   └── utils.py              # Các hàm tiện ích
+│   ├── model_utils.py            # Hàm xử lý dữ liệu và dữ liệu đầu vào
+│   └── train.py              # train và lưu mô hình
 │
 ├── data/
 │   └── student_data.csv      # Dữ liệu nguồn
 │
 └── model/
     └── student_model.pkl     # Mô hình đã train
+    |── training_features.pkl    
 ```
 
 ---
