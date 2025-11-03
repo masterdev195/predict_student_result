@@ -6,7 +6,7 @@ from src.Config import (MODEL_PATH,FEATURES_PATH, Get_Major_List, Get_Admission_
                         REG_MODEL_GPA4_PATH,REG_MODEL_GPA3_PATH,REG_MODEL_GPA2_PATH)
 
 
-@st.cache_resource
+@st.cache_resource(ttl=60)
 def load_model():
       model = joblib.load(MODEL_PATH)
       features = joblib.load(FEATURES_PATH)
@@ -71,9 +71,6 @@ if st.button("Dự đoán"):
                   'gpa_year2': gpa_year2,
                   'gpa_year3': gpa_year3,
                   'gpa_year4': gpa_year4
-
-
-
             }
 
             # gọi hàm predict
@@ -86,8 +83,39 @@ if st.button("Dự đoán"):
                   reg_gpa4 = reg_gpa4
             )
 
-            #hiển thị
+            # #hiển thị
 
-            st.success(f"Kết quả dự đoán: {result['prediction_text']}")
-            st.write("**Chi tiết dự đoán:**")
-            st.json(result)
+            # st.success(f"Kết quả dự đoán: {result['prediction_text']}")
+            # st.write("**Chi tiết dự đoán:**")
+            # st.json(result)
+            # THAY ĐỔI: Hiển thị kết quả chi tiết
+            st.subheader("Kết quả dự đoán:")
+            
+            if result['graduate_on_time'] == 1:
+                  st.success(f"Dự đoán: {result['prediction_text']}")
+            else:
+                  st.error(f"Dự đoán: {result['prediction_text']}")
+
+            st.markdown(f"**Xác suất Tốt nghiệp đúng hạn:** `{result['probability_on_time'] * 100:.2f}%`")
+            st.markdown(f"**Xác suất Tốt nghiệp không đúng hạn:** `{result['probability_late'] * 100:.2f}%`")
+            
+            # PHÂN TÍCH CHUYÊN SÂU: Hiển thị các thuộc tính đã được tiền xử lý
+            st.subheader("Phân tích dữ liệu đầu vào (Sau khi điền giá trị thiếu):")
+            
+            imputed_gpa = {
+                  'gpa_year1': result['imputed_features']['gpa_year1'],
+                  'gpa_year2': result['imputed_features']['gpa_year2'],
+                  'gpa_year3': result['imputed_features']['gpa_year3'],
+                  'gpa_year4': result['imputed_features']['gpa_year4']
+            }
+            
+            st.json(imputed_gpa)
+            
+            #  Kiểm tra các đặc trưng không phải GPA
+            st.markdown("**KIỂM TRA CÁC ĐẶC TRƯNG KHÁC:**")
+            st.write(f"- Failed Courses: **{result['imputed_features'].get('failed_courses', 'N/A')}**")
+            st.write(f"- Attendance Rate: **{result['imputed_features'].get('attendance_rate', 'N/A')}**")
+            st.write(f"- Extra Activities: **{result['imputed_features'].get('extra_activities', 'N/A')}**")
+            
+            if result['probability_late'] > 0.5:
+                st.warning("Nếu xác suất tiêu cực vẫn cao, hãy kiểm tra các thuộc tính còn lại (Failed Courses, Attendance, v.v.) vì mô hình đã được huấn luyện với các giá trị trung bình cho các thuộc tính này, và có thể chúng đang kéo kết quả xuống.")
