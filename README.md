@@ -20,14 +20,17 @@ Predict_Student_Result/
 │   ├── rf_graduate_model.pkl           # Mô hình Random Forest đã huấn luyện
 │   ├── training_features.pkl           # Danh sách các đặc trưng (cột)
 │   └── reg_gpaX_model.pkl              # Các mô hình hồi quy GPA (2, 3, 4)
+│
+├── scripts/
+│   └── train_imputation_regressors.py            # Các mô hình hồi quy GPA (2, 3, 4)
 ├── src/
 │   ├── Config.py                       # Cấu hình, giá trị trung bình (ALL_NUMERIC_MEANS)
 │   ├── model_utils.py                  # Hàm tiền xử lý (preprocess_data) và dự đoán
-│   └── __init__.py
-├── App.py                              # Ứng dụng Flask API (được đề cập)
+│   ├── App.py                          # Ứng dụng Flask API (được đề cập)
+│   ├── train.py                        # Script huấn luyện mô hình chính(randomforest)
+│   └── __init__.py                          
 ├── Streamlit_App.py                    # Ứng dụng giao diện Streamlit
-├── train.py                            # Script huấn luyện mô hình chính (ở thư mục gốc)
-├── train_imputation_regressors.py      # Script huấn luyện mô hình hồi quy (ở thư mục gốc)
+├── requirement.txt                     # các thự viện cần dùng
 └── README.md                           # Tài liệu dự án                          
 ```
 
