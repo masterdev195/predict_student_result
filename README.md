@@ -17,6 +17,7 @@ Giải pháp sử dụng mô hình **Random Forest Classifier** và triển khai
 ## 🧱 Cấu trúc Dự án
 
 Cấu trúc thư mục được tổ chức rõ ràng để phân tách các thành phần dữ liệu, mô hình, mã nguồn và giao diện người dùng.
+---
 Predict_Student_Result/
 │
 ├── data/
@@ -37,7 +38,6 @@ Predict_Student_Result/
 ├── .env # Cấu hình môi trường (ví dụ: PORT)
 ├── requirements.txt # Danh sách thư viện Python
 └── README.md # Tài liệu dự án
-
 ---
 
 ---
@@ -61,8 +61,6 @@ Các đặc trưng học tập như `gpa_semX`, `credits_semX`, `failed_semX`, `
 
 ---
 
----
-
 ### 2. Pipeline Huấn luyện
 
 Mỗi mô hình (Sem 5, 6, 7, 8) được huấn luyện thông qua một **Pipeline** bao gồm hai bước chính (xem `src/train.py`):
@@ -73,8 +71,6 @@ Mỗi mô hình (Sem 5, 6, 7, 8) được huấn luyện thông qua một **Pipe
 
 #### 2️⃣ `classifier` (`RandomForestClassifier`)
 - Sử dụng tham số `class_weight='balanced'` để xử lý tình trạng mất cân bằng lớp (nếu có).
-
----
 
 ---
 
@@ -89,7 +85,6 @@ Trong `src/model_utils.py`, hàm `predict_graduation` thực hiện các bước
 5. Trả về kết quả **(Đúng Hạn / Trễ Hạn)** và độ tin cậy.
 
 ---
-
 
 ## 🚀 Cài đặt và Khởi chạy
 
