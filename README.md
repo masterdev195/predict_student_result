@@ -97,17 +97,20 @@ python -m venv venv
 
 # Cài đặt thư viện cần thiết
 pip install -r requirements.txt
-2. Huấn luyện Mô hình
+```
 
+### 2. Huấn luyện Mô hình
+```
 Bạn cần chạy script huấn luyện để tạo ra 4 mô hình (.pkl) trong thư mục models/:
 
 python -m src.train
 
-
 Lưu ý: Script src.train sẽ tự động tải dữ liệu, tiền xử lý, huấn luyện 4 mô hình, đánh giá và lưu chúng.
+```
 
-3. Khởi chạy Ứng dụng Web (Streamlit)
 
+### 3. Khởi chạy Ứng dụng Web (Streamlit)
+```
 Chạy ứng dụng web để tương tác với các mô hình đã huấn luyện:
 
 streamlit run Streamlit_App.py
@@ -122,7 +125,8 @@ Machine Learning	scikit-learn (RandomForestClassifier, Pipeline, ColumnTransform
 Xử lý Dữ liệu	pandas, numpy, joblib
 Giao diện Web	Streamlit
 Cấu hình	python-dotenv
+```
 
-✨ Tác giả: [Tên của bạn]
+✨ Tác giả: Dany
 📅 Phiên bản: 1.0
 📁 Dự án Học máy – Dự đoán Khả năng Tốt nghiệp Đúng hạn của Sinh viên
