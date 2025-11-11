@@ -17,7 +17,6 @@ Giải pháp sử dụng mô hình **Random Forest Classifier** và triển khai
 ## 🧱 Cấu trúc Dự án
 
 Cấu trúc thư mục được tổ chức rõ ràng để phân tách các thành phần dữ liệu, mô hình, mã nguồn và giao diện người dùng.
----
 Predict_Student_Result/
 │
 ├── data/
@@ -38,7 +37,6 @@ Predict_Student_Result/
 ├── .env # Cấu hình môi trường (ví dụ: PORT)
 ├── requirements.txt # Danh sách thư viện Python
 └── README.md # Tài liệu dự án
----
 
 ---
 
