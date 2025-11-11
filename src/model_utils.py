@@ -17,11 +17,9 @@ def get_preprocessor(X_train, features_for_sem):
     """Tạo và fit ColumnTransformer cho việc tiền xử lý."""
     numerical_features = [col for col in features_for_sem if col not in CATEGORICAL_FEATURES]
     numerical_pipeline = Pipeline(steps=[
-        # Dùng 'constant' và fill_value=0 hoặc 'mean' tùy ngữ cảnh.
-        # Ở đây ta giả định dữ liệu đã được làm sạch tốt, nên chỉ cần giữ nguyên.
         ('imputer', SimpleImputer(strategy='mean')) 
     ])
-    # 1. Tạo Preprocessor
+    #  Tạo Preprocessor
     preprocessor = ColumnTransformer(
         transformers=[
             ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), CATEGORICAL_FEATURES),
