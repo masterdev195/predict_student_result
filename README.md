@@ -119,12 +119,12 @@ streamlit run Streamlit_App.py
 Ứng dụng sẽ khởi chạy trên trình duyệt của bạn (thường là http://localhost:8501).
 
 🧠 Công nghệ Sử dụng
-Thành phần	Công nghệ
-Ngôn ngữ	Python
-Machine Learning	scikit-learn (RandomForestClassifier, Pipeline, ColumnTransformer)
-Xử lý Dữ liệu	pandas, numpy, joblib
-Giao diện Web	Streamlit
-Cấu hình	python-dotenv
+Thành phần:	Công nghệ
+Ngôn ngữ:	Python
+Machine Learning:	scikit-learn (RandomForestClassifier, Pipeline, ColumnTransformer)
+Xử lý Dữ liệu:	pandas, numpy, joblib
+Giao diện Web:	Streamlit
+Cấu hình:	python-dotenv
 ```
 
 ✨ Tác giả: Dany

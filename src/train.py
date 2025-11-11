@@ -13,17 +13,17 @@ from src.model_utils import load_data, get_preprocessor, save_model
 
 def train_multi_stage_models():
     
-    #Huấn luyện mô hình Random Forest riêng biệt cho từng kỳ học (Sem 5, 6, 7, 8).
+    #Huấn luyện mô hình Random Forest riêng biệt cho từng kỳ học
     
-    # 1. Tạo thư mục models
+    #  Tạo thư mục models
     os.makedirs(MODELS_DIR, exist_ok=True)
     
-    # 2. Tải toàn bộ dữ liệu
+    # Tải toàn bộ dữ liệu
     df = load_data(DATA_FILE_PATH)
     
     print("--- BẮT ĐẦU HUẤN LUYỆN 4 MÔ HÌNH DỰ ĐOÁN ---")
     
-    # 3. Lặp qua từng điểm thời gian (kỳ học)
+    #  Lặp qua từng điểm thời gian (kỳ học)
     for sem in SEMESTER_POINTS:
         print(f"\n[MODEL SEM {sem}] Đang huấn luyện mô hình cho sinh viên đến hết Kỳ {sem}...")
         

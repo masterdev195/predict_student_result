@@ -2,33 +2,31 @@ import streamlit as st
 import pandas as pd
 import os
 import sys
+from dotenv import load_dotenv
 
+from src.model_utils import load_data, load_model, predict_graduation 
+from src.Config import SEMESTER_POINTS, DATA_FILE_PATH,DEFAULT_HOST_PUBLIC,DEFAULT_PORT_PUBLIC
+
+load_dotenv()
+HOST = os.getenv("HOST",DEFAULT_HOST_PUBLIC)
+PORT = int(os.getenv("POST", DEFAULT_PORT_PUBLIC))
 # Thêm thư mục src vào PATH để import
 sys.path.insert(0, os.path.abspath('src'))
-
-# Import hàm dự đoán từ model_utils
-from src.model_utils import load_data, load_model, predict_graduation 
-from src.Config import SEMESTER_POINTS, DATA_FILE_PATH
-
-# --- Cấu hình Ban đầu ---
 MODELS_READY = all(os.path.exists(f"models/model_sem{s}.pkl") for s in SEMESTER_POINTS)
-# ... (Phần code kiểm tra và chạy huấn luyện giữ nguyên) ...
 
-# Tải tất cả 4 mô hình (nếu có)
 MODELS = {s: load_model(s) for s in SEMESTER_POINTS}
 
-# Tải dữ liệu để lấy danh sách Major, Admission Type
 df_ref = load_data(DATA_FILE_PATH)
 MAJOR_LIST = sorted(df_ref['major'].unique().tolist())
 ADMISSION_TYPES = sorted(df_ref['admission_type'].unique().tolist())
 
-# --- Giao diện Streamlit ---
+#  Giao diện Streamlit 
 st.set_page_config(page_title="Hệ Thống Dự Đoán Tốt Nghiệp Sớm", layout="wide")
 
 st.title("🎓 Hệ Thống Dự Đoán Khả Năng Tốt Nghiệp Đúng Hạn")
 st.markdown("Sử dụng mô hình Random Forest để dự đoán khả năng sinh viên tốt nghiệp đúng hạn.")
 
-# BƯỚC 1: CHỌN KỲ HỌC (NGOÀI FORM) ĐỂ KÍCH HOẠT TÍNH ĐỘNG
+# CHỌN KỲ HỌC (NGOÀI FORM) ĐỂ KÍCH HOẠT TÍNH ĐỘNG
 
 semester_map = {
     5: "Năm 3, Kỳ 1 (End Sem 5)",
@@ -37,7 +35,7 @@ semester_map = {
     8: "Năm 4, Kỳ 2 (End Sem 8)",
 }
 
-# Chọn kỳ học hiện tại (kích hoạt rerun script)
+# Chọn kỳ học hiện tại 
 semester_point = st.selectbox(
     " Sinh viên đang ở thời điểm (Chọn Mô hình Dự đoán)", 
     options=list(semester_map.keys()), 
@@ -75,17 +73,14 @@ with st.form("prediction_form"):
         failed_count = st.number_input(f"Số môn/tín chỉ Trượt tích lũy (đến hết Sem {semester_point-1} hoặc {semester_point})", min_value=0, value=0)
         warn_count = st.number_input(f"Số lần bị Cảnh báo Học vụ tích lũy (đến hết Sem {semester_point-1} hoặc {semester_point})", min_value=0, value=0)
         
-    # Cột 3: GPA Từng Kỳ
+    # GPA Từng Kỳ
     with col3:
         st.subheader("Điểm GPA Từng Kỳ")
         
         gpa_inputs = {}
         max_sem_input = semester_point
-        
-        # Hiển thị GPA từng kỳ học từ Sem 1 đến kỳ hiện tại (max_sem_input thay đổi)
+    
         for i in range(1, max_sem_input):
-            # Tính GPA trung bình tích lũy cho các kỳ đã qua (từ 1 đến i-1)
-            # Khởi tạo giá trị mặc định dựa trên kỳ học
             if i <= 4:
                 default_gpa = 3.0
             elif i == 5:
@@ -95,21 +90,18 @@ with st.form("prediction_form"):
                 
             gpa_inputs[f'gpa_sem{i}'] = st.number_input(f"GPA Kỳ {i}", min_value=0.0, max_value=4.0, value=default_gpa, step=0.01)
 
-    # Nút gửi
     submitted = st.form_submit_button("Dự đoán Khả năng Tốt nghiệp")
 
 if submitted:
-    # ... (Phần logic xử lý khi submitted giữ nguyên) ...
     if not MODELS_READY:
         st.error("Lỗi: Các mô hình chưa được tải hoặc huấn luyện thành công. Vui lòng kiểm tra console.")
     else:
-        # Chuẩn bị dữ liệu cho mô hình
         input_data = {
             'gender': gender,
             'major': major,
             'admission_type': admission_type,
             'admission_score': admission_score,
-            **gpa_inputs, # Thêm các trường GPA theo kỳ
+            **gpa_inputs, 
             current_credits_col: credits_acc,
             current_failed_col: failed_count,
             current_warn_col: warn_count

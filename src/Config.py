@@ -1,24 +1,26 @@
 
 import os
 
-# --- Cấu hình Đường dẫn ---
+# Cổng mặc định
+DEFAULT_HOST_PUBLIC = "127.0.0.1"
+DEFAULT_PORT_PUBLIC = 8501
+# Cấu hình Đường dẫn 
 DATA_DIR = "data"
 MODELS_DIR = "models"
 DATA_FILE_PATH = os.path.join(DATA_DIR, "graduation_dataset_final1.csv")
 MODEL_NAMES = {
-    5: "model_sem5.pkl",  # Y3 S1 (End Sem 5)
-    6: "model_sem6.pkl",  # Y3 S2 (End Sem 6)
-    7: "model_sem7.pkl",  # Y4 S1 (End Sem 7)
-    8: "model_sem8.pkl",  # Y4 S2 (End Sem 8)
+    5: "model_sem5.pkl",  
+    6: "model_sem6.pkl",  
+    7: "model_sem7.pkl", 
+    8: "model_sem8.pkl",  
 }
 
-# --- Cấu hình Mô hình ---
+#  Cấu hình Mô hình ---
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
 N_ESTIMATORS = 100
 TARGET_COLUMN = 'target'
 
-# --- Định nghĩa Đặc trưng ---
 # Đặc trưng cố định (không thay đổi theo kỳ học)
 FIXED_FEATURES = ['gender', 'major', 'admission_type', 'admission_score']
 CATEGORICAL_FEATURES = ['gender', 'major', 'admission_type']
