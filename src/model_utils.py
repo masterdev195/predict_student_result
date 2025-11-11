@@ -1,123 +1,78 @@
+# src/model_utils.py
+import os
 import pandas as pd
-import joblib 
-import numpy as np
-from src.Config import (FINANCIAL_ORDER,NOMINAL_COLS,COLS_TO_DROP, ALL_NUMERIC_MEANS)
+import joblib
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
 
-def preprocess_data(df: pd.DataFrame, is_training: bool = True,reg_gpa2=None, reg_gpa3=None, reg_gpa4=None) -> pd.DataFrame:
-      df_copy = df.copy()
-      
-      # Chuẩn hóa tên cột
-      df_copy.columns = df_copy.columns.str.lower().str.strip()
+from src.Config import TARGET_COLUMN, CATEGORICAL_FEATURES, MODELS_DIR,FEATURE_SETS, FIXED_FEATURES
 
-      # Thay missing values
-      df_copy = df_copy.fillna(
-            {
-                  "finanacial_state" :"medium",
-                  "major" : "Unknown",
-                  "addmission_type": "Other",
-                  "gender": "Other"
-            }
-      )
+def load_data(file_path):
+    """Tải dữ liệu từ file CSV."""
+    return pd.read_csv(file_path)
 
-      # chuyển gpa về chuẩn dạng số
-      gpa_cols = [c for c in df_copy.columns if c.startswith("gpa")]
-      for col in gpa_cols:
-            df_copy[col] = pd.to_numeric(df_copy[col], errors="coerce")\
-      
-      # 2. KHỐI THÊM MỚI: Imputation cho các cột số (GPA và Non-GPA)
-      # Đây là bước BẮT BUỘC để điền các giá trị như attendance_rate, failed_courses, v.v.
-      numeric_cols_to_impute = [
-            'total_credits_required', 'failed_courses', 'academic_warnings', 
-            'attendance_rate', 'assignment_submission_rate', 'extra_activities',
-            'achieved_scholarship', 'total_cumulative_gpa'
-      ]
+def get_preprocessor(X_train, features_for_sem):
+    """Tạo và fit ColumnTransformer cho việc tiền xử lý."""
+    numerical_features = [col for col in features_for_sem if col not in CATEGORICAL_FEATURES]
+    numerical_pipeline = Pipeline(steps=[
+        # Dùng 'constant' và fill_value=0 hoặc 'mean' tùy ngữ cảnh.
+        # Ở đây ta giả định dữ liệu đã được làm sạch tốt, nên chỉ cần giữ nguyên.
+        ('imputer', SimpleImputer(strategy='mean')) 
+    ])
+    # 1. Tạo Preprocessor
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), CATEGORICAL_FEATURES),
+            ('num', numerical_pipeline, numerical_features)
+        ],
+        remainder='drop'
+    )
+    
+    # 2. Fit preprocessor trên tập huấn luyện
+    preprocessor.fit(X_train)
+    return preprocessor
 
-      for col in numeric_cols_to_impute:
-          # Ép kiểu số (vì các cột này có thể bị thiếu từ input)
-          df_copy[col] = pd.to_numeric(df_copy.get(col, np.nan), errors="coerce")
-          
-          # Điền giá trị thiếu bằng giá trị trung bình từ Config.py
-          fill_val = ALL_NUMERIC_MEANS.get(col, 0.5) 
-          df_copy[col] = df_copy[col].fillna(fill_val)
+def save_model(model, semester):
+    """Lưu mô hình đã huấn luyện."""
+    model_name = os.path.join(MODELS_DIR, f'model_sem{semester}.pkl')
+    joblib.dump(model, model_name)
+    print(f"-> Đã lưu mô hình Sem {semester} vào: {model_name}")
 
-            # CHÚ THÍCH THAY ĐỔI MỚI: Xử lý GPA_YEAR1 thiếu
-      # Vì gpa_year1 là biến đầu vào độc lập, ta không dùng hồi quy mà dùng giá trị trung bình để điền ngay.
-      fill_value_gpa1 = ALL_NUMERIC_MEANS.get('gpa_year1', 2.5) 
-      df_copy['gpa_year1'] = df_copy['gpa_year1'].fillna(fill_value_gpa1)
-      # thực hiện imputation dựa trên hồi quy(only trong chế độ dự đoán)
-      if not is_training:
-            # CHÚ THÍCH THAY ĐỔI 2: Đảo ngược thứ tự dự đoán (2 -> 3 -> 4) 
-            # để đảm bảo các biến đầu vào (X) không có NaN, vì gpa_year1 đã được điền ở bước trên.
-            
-            # 1. điền giá trị còn thiếu của gpa_year2 (dùng gpa_year1 đã được điền)
-            if df_copy['gpa_year2'].isna().any() and reg_gpa2 is not None:
-                  missing_gpa2_rows = df_copy['gpa_year2'].isna()
-                  X_gpa2 = df_copy.loc[missing_gpa2_rows, ['gpa_year1']]
-                  predicted_gpa2 = reg_gpa2.predict(X_gpa2)
-                  df_copy.loc[missing_gpa2_rows, 'gpa_year2'] = np.clip(predicted_gpa2, 0.0, 4.0)
-                  
-            # 2. điền giá trị còn thiếu của gpa_year3 (dùng gpa_year1, gpa_year2 đã được điền)
-            if df_copy['gpa_year3'].isna().any() and reg_gpa3 is not None:
-                  missing_gpa3_rows = df_copy['gpa_year3'].isna()
-                  X_gpa3 = df_copy.loc[missing_gpa3_rows, ['gpa_year1', 'gpa_year2']]
-                  predicted_gpa3 = reg_gpa3.predict(X_gpa3)
-                  df_copy.loc[missing_gpa3_rows, 'gpa_year3'] = np.clip(predicted_gpa3, 0.0, 4.0)
+def load_model(semester):
+    """Tải mô hình đã lưu."""
+    model_name = os.path.join(MODELS_DIR, f'model_sem{semester}.pkl')
+    try:
+        return joblib.load(model_name)
+    except FileNotFoundError:
+        return None
+    
+def predict_graduation(data: dict, semester_point: int, models: dict):
+       
+    #Tải mô hình phù hợp và dự đoán khả năng tốt nghiệp.
+    model = models.get(semester_point)
+    if not model:
+        return None, None, f"Mô hình cho Kỳ {semester_point} chưa được tải hoặc không tồn tại."
 
-            # 3. điền giá trị còn thiếu của gpa_year4 (dùng gpa_year1, gpa_year2, gpa_year3 đã được điền)
-            if df_copy['gpa_year4'].isna().any() and reg_gpa4 is not None:
-                  missing_gpa4_rows = df_copy['gpa_year4'].isna()
-                  X_gpa4 = df_copy.loc[missing_gpa4_rows, ['gpa_year1', 'gpa_year2', 'gpa_year3']]
-                  predicted_gpa4 = reg_gpa4.predict(X_gpa4)
-                  df_copy.loc[missing_gpa4_rows, 'gpa_year4'] = np.clip(predicted_gpa4, 0.0, 4.0)
-
-             
-      # Code điền thiếu 0.0 cho Training (Giữ nguyên logic cũ của bạn)
-      for col in ['gpa_year2','gpa_year3','gpa_year4']:
-            fill_value = ALL_NUMERIC_MEANS.get(col,2.5)
-            df_copy[col] = df_copy[col].fillna(fill_value)
-                  
-      # ordinal Encoding 
-      df_copy['financial_state_encoded'] = df_copy['financial_state'].map(FINANCIAL_ORDER)
-      df_copy = df_copy.drop('financial_state', axis =1)
-      
-      # One-Hot Encoding 
-      df_encoded = pd.get_dummies(df_copy, columns =NOMINAL_COLS, drop_first = True)
-
-      # delete unnecessary columns
-      df_final = df_encoded.drop(COLS_TO_DROP, axis=1, errors='ignore')
-
-      if is_training and 'graduate_on_time' in df_final.columns:
-            df_final = df_final.drop('graduate_on_time', axis =1 )
-      return df_final
-
-def Predict_student_status(new_data_dict: dict, model, training_features, reg_gpa2=None, reg_gpa3=None, reg_gpa4=None)-> dict:
-      """
-      Khi có input mới thì dự đoán 
-      """
-
-      df_new = pd.DataFrame([new_data_dict])
-
-      # Tiền xử lý
-      X_new_processed = preprocess_data(df_new, is_training=False,
-                                        reg_gpa2=reg_gpa2, reg_gpa3 = reg_gpa3, reg_gpa4=reg_gpa4)
-
-      X_final = X_new_processed.reindex(columns=training_features, fill_value=0)
-
-      # Dữ liệu cuối cùng mà mô hình nhìn thấy (rất quan trọng để debug)
-      final_features = X_final.iloc[0].to_dict()
-
-      # dự đoán 
-      prediction = model.predict(X_final)[0]
-      prediction_proba = model.predict_proba(X_final)[0]
-
-      result_text = "Tốt nghiệp đúng hạn" if prediction ==1 else "Tốt nghiệp không đúng hạn"
-
-      return{
-            'prediction_text': result_text,
-            'graduate_on_time': int((prediction)),
-            'probability_on_time': round(prediction_proba[1], 4), # Xác suất tốt nghiệp đúng hạn
-            'probability_late': round(prediction_proba[0], 4),   # Xác suất tốt nghiệp không đúng hạn
-            'imputed_features': final_features # TRẢ VỀ CÁC GIÁ TRỊ ĐÃ ĐƯỢC ĐIỀN
-      }
-
-      
+    # Lấy bộ đặc trưng cần thiết cho mô hình này
+    required_features = FEATURE_SETS[semester_point]
+    
+    try:
+        # Chuẩn bị DataFrame đầu vào
+        # 1. Chuyển dict sang DataFrame 1 hàng
+        # 2. Lọc/sắp xếp DataFrame theo đúng required_features của mô hình
+        X_new = pd.DataFrame([data])[required_features]
+        
+        # Dự đoán
+        prediction = model.predict(X_new)[0]
+        prob = model.predict_proba(X_new)[0]
+        
+        result_class = "Đúng Hạn (On Time)" if prediction == 1 else "Không Đúng Hạn (Delayed/Drop)"
+        confidence = prob[prediction]
+        
+        return result_class, confidence, None
+    
+    except Exception as e:
+        # Bắt lỗi nếu dữ liệu đầu vào thiếu cột hoặc sai định dạng
+        return None, None, f"Lỗi trong quá trình dự đoán (Kiểm tra dữ liệu đầu vào): {e}"
