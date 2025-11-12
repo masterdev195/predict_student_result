@@ -23,7 +23,6 @@ st.set_page_config(page_title="Hệ Thống Dự Đoán Tốt Nghiệp Sớm", l
 st.title("🎓 Hệ Thống Dự Đoán Khả Năng Tốt Nghiệp Đúng Hạn")
 st.markdown("Sử dụng mô hình Random Forest để dự đoán khả năng sinh viên tốt nghiệp đúng hạn.")
 
-# CHỌN KỲ HỌC (NGOÀI FORM) ĐỂ KÍCH HOẠT TÍNH ĐỘNG
 
 semester_map = {
     5: "Năm 3, Kỳ 1 (End Sem 5)",
@@ -32,7 +31,6 @@ semester_map = {
     8: "Năm 4, Kỳ 2 (End Sem 8)",
 }
 
-# Chọn kỳ học hiện tại 
 semester_point = st.selectbox(
     " Sinh viên đang ở thời điểm (Chọn Mô hình Dự đoán)", 
     options=list(semester_map.keys()), 
@@ -41,27 +39,22 @@ semester_point = st.selectbox(
 )
 
 
-#  FORM NHẬP LIỆU (SỬ DỤNG GIÁ TRỊ semester_point ĐÃ CHỌN)
-
 with st.form("prediction_form"):
     st.header("2. Nhập Thông tin Đặc trưng")
 
     col1, col2, col3 = st.columns(3)
     
-    # Thông tin cơ bản
     with col1:
         st.subheader("Thông tin Cơ bản")
         full_name = st.text_input("Họ và Tên Sinh viên", "Nguyễn Văn A")
         gender = st.selectbox("Giới tính", ['Nam', 'Nữ'])
         major = st.selectbox("Ngành học (Major)", MAJOR_LIST)
         
-    # Thông tin Học tập Tích lũy
     with col2:
         st.subheader("Trạng thái Tích lũy")
         admission_type = st.selectbox("Phương thức Xét tuyển", ADMISSION_TYPES)
         admission_score = st.number_input("Điểm thi Đầu vào (VD: 26.53)", min_value=0.0, max_value=30.0, value=26.0, step=0.01)
         
-        # Tên cột tích lũy sẽ thay đổi dựa trên semester_point đã chọn
         current_credits_col = f'credits_sem{semester_point}'
         current_failed_col = f'failed_sem{semester_point}'
         current_warn_col = f'warn_sem{semester_point}'
@@ -70,7 +63,6 @@ with st.form("prediction_form"):
         failed_count = st.number_input(f"Số môn/tín chỉ Trượt tích lũy (đến hết Sem {semester_point-1} hoặc {semester_point})", min_value=0, value=0)
         warn_count = st.number_input(f"Số lần bị Cảnh báo Học vụ tích lũy (đến hết Sem {semester_point-1} hoặc {semester_point})", min_value=0, value=0)
         
-    # GPA Từng Kỳ
     with col3:
         st.subheader("Điểm GPA Từng Kỳ")
         

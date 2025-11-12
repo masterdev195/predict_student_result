@@ -13,34 +13,24 @@ from src.Config import (
 from src.model_utils import load_data, get_preprocessor, save_model
 
 def train_multi_stage_models():
-    
-    #Huấn luyện mô hình Random Forest riêng biệt cho từng kỳ học
-    
-    #  Tạo thư mục models
+
     os.makedirs(MODELS_DIR, exist_ok=True)
-    
-    # Tải toàn bộ dữ liệu
-    df = load_data(DATA_FILE_PATH)
-    
+    df = load_data(DATA_FILE_PATH)  
     print("--- BẮT ĐẦU HUẤN LUYỆN 4 MÔ HÌNH DỰ ĐOÁN ---")
     
-    #  Lặp qua từng điểm thời gian (kỳ học)
     for sem in SEMESTER_POINTS:
         print(f"\n[MODEL SEM {sem}] Đang huấn luyện mô hình cho sinh viên đến hết Kỳ {sem}...")
         
-        # Lấy bộ đặc trưng cụ thể cho kỳ học này
         features = FEATURE_SETS[sem]
         X = df[features]
         y = df[TARGET_COLUMN]
         
-        # Chia tập huấn luyện và kiểm tra
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y
         )
-        
-        # Tạo Preprocessor và Pipeline
+
         preprocessor = get_preprocessor(X_train, features)
-        
+
         rf_classifier = RandomForestClassifier(
             n_estimators=N_ESTIMATORS, 
             random_state=RANDOM_STATE, 
@@ -51,14 +41,11 @@ def train_multi_stage_models():
             ('preprocessor', preprocessor),
             ('classifier', rf_classifier)
         ])
-        
-        # Huấn luyện mô hình
         model_pipeline.fit(X_train, y_train)
         
         # Đánh giá mô hình
         y_pred = model_pipeline.predict(X_test)
         y_prob = model_pipeline.predict_proba(X_test)[:, 1]
-        # Tính toán Ma trận Nhầm lẫn
         cm = confusion_matrix(y_test, y_pred)
         report = classification_report(y_test, y_pred, output_dict=True)
         specificity = report['0']['recall']
@@ -72,15 +59,12 @@ def train_multi_stage_models():
         log_l = log_loss(y_test,y_prob)
         print("\n--- KẾT QUẢ ĐÁNH GIÁ HIỆU SUẤT TOÀN DIỆN ---")
         
-        # 5. Ma trận Nhầm lẫn
         print("\n[A] MA TRẬN NHẦM LẪN (Confusion Matrix):")
         print("---------------------------------------")
-        print(f"                  | Predicted No (0) | Predicted Yes (1)")
-        print(f"Actual No (0):    | {cm[0, 0]:<16} | {cm[0, 1]:<15} (FP)") 
-        print(f"Actual Yes (1):   | {cm[1, 0]:<16} (FN) | {cm[1, 1]:<15} (TP)")
-        print("---------------------------------------")
+        print(f"                |  Predicted No (0)   | Predicted Yes (1)")
+        print(f"Actual No (0):  | {cm[0, 0]:<16}      | {cm[0, 1]:<15} (FP)") 
+        print(f"Actual Yes (1): | {cm[1, 0]:<16} (FN) | {cm[1, 1]:<15} (TP)")
 
-        # 6. Các Metrics Chính
         print("\n[B] CHỈ SỐ PHÂN LOẠI CƠ BẢN:")
         print(f"  Accuracy (Tổng quan):  {accuracy_score(y_test, y_pred):.4f}")
         print(f"  F1-Score (Lớp 1):      {report['1']['f1-score']:.4f}")
@@ -103,7 +87,6 @@ def train_multi_stage_models():
         
         print("\n--- TOP 10 FEATURE IMPORTANCE ---")
         print(feature_importance_df.head(10).to_string(index=False))
-        print("-----------------------------------")
         
         save_model(model_pipeline, sem)
 

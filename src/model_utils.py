@@ -28,15 +28,13 @@ def get_preprocessor(X_train, features_for_sem):
     
     preprocessor.fit(X_train)
     return preprocessor
-
+#lưu mô hình
 def save_model(model, semester):
-    #Lưu mô hình đã huấn luyện.
     model_name = os.path.join(MODELS_DIR, f'model_sem{semester}.pkl')
     joblib.dump(model, model_name)
     print(f"-> Đã lưu mô hình Sem {semester} vào: {model_name}")
-
+# tải mô hình 
 def load_model(semester):
-    """Tải mô hình đã lưu."""
     model_name = os.path.join(MODELS_DIR, f'model_sem{semester}.pkl')
     try:
         return joblib.load(model_name)
@@ -44,24 +42,17 @@ def load_model(semester):
         return None
     
 def predict_graduation(data: dict, semester_point: int, models: dict):
-       
-    #Tải mô hình phù hợp và dự đoán khả năng tốt nghiệp.
     model = models.get(semester_point)
     if not model:
         return None, None, f"Mô hình cho Kỳ {semester_point} chưa được tải hoặc không tồn tại."
-
-    # Lấy bộ đặc trưng cần thiết cho mô hình này
     required_features = FEATURE_SETS[semester_point]
     
     try:
-        # Chuẩn bị DataFrame đầu vào
         X_new = pd.DataFrame([data])[required_features]
-        
-        # Dự đoán
         prediction = model.predict(X_new)[0]
         prob = model.predict_proba(X_new)[0]
         
-        result_class = "Đúng Hạn (On Time)" if prediction == 1 else "Không Đúng Hạn (Delayed/Drop)"
+        result_class = "Đúng Hạn (On Time)" if prediction == 1 else "Không Đúng Hạn (Delayed)"
         confidence = prob[prediction]
         
         return result_class, confidence, None
