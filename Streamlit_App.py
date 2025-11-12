@@ -2,19 +2,16 @@ import streamlit as st
 import pandas as pd
 import os
 import sys
+import requests
 from dotenv import load_dotenv
 
 from src.model_utils import load_data, load_model, predict_graduation 
-from src.Config import SEMESTER_POINTS, DATA_FILE_PATH,DEFAULT_HOST_PUBLIC,DEFAULT_PORT_PUBLIC
+from src.Config import SEMESTER_POINTS, DATA_FILE_PATH,API_HOST,API_PORT
 
 load_dotenv()
-HOST = os.getenv("HOST",DEFAULT_HOST_PUBLIC)
-PORT = int(os.getenv("POST", DEFAULT_PORT_PUBLIC))
+API_URL = f"http://{API_HOST}:{API_PORT}/predict_graduation"
 # Thêm thư mục src vào PATH để import
 sys.path.insert(0, os.path.abspath('src'))
-MODELS_READY = all(os.path.exists(f"models/model_sem{s}.pkl") for s in SEMESTER_POINTS)
-
-MODELS = {s: load_model(s) for s in SEMESTER_POINTS}
 
 df_ref = load_data(DATA_FILE_PATH)
 MAJOR_LIST = sorted(df_ref['major'].unique().tolist())
@@ -93,10 +90,7 @@ with st.form("prediction_form"):
     submitted = st.form_submit_button("Dự đoán Khả năng Tốt nghiệp")
 
 if submitted:
-    if not MODELS_READY:
-        st.error("Lỗi: Các mô hình chưa được tải hoặc huấn luyện thành công. Vui lòng kiểm tra console.")
-    else:
-        input_data = {
+    input_data = {
             'gender': gender,
             'major': major,
             'admission_type': admission_type,
@@ -107,22 +101,31 @@ if submitted:
             current_warn_col: warn_count
         }
         
-        # Dự đoán
-        result_class, confidence, error_msg = predict_graduation(input_data, semester_point, MODELS)
+    api_request_data = {
+            "semester_point": semester_point,
+            "input_data": input_data
+    }        
 
-        if error_msg:
-            st.error(f"Lỗi: {error_msg}")
-        else:
-            st.success(f"✅ Dự đoán Thành công cho sinh viên **{full_name}**")
-            
-            # Hiển thị kết quả
-            if result_class == "Đúng Hạn (On Time)":
-                st.balloons()
-                st.markdown(f"### Kết quả Dự đoán: <span style='color:green'>**{result_class}**</span>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"### Kết quả Dự đoán: <span style='color:red'>**{result_class}**</span>", unsafe_allow_html=True)
+    try:
+        response = requests.post(API_URL, json=api_request_data)
+        if requests.status_codes == 200:
+            result = response.json()
+            if result.get("status") == "success":
+                result_class = result['prediction_class']
+                confidence = result['confidence']
+                st.success(f"✅ Dự đoán Thành công cho sinh viên **{full_name}**")
                 
-            st.markdown(f"**Độ Tin cậy:** `{confidence*100:.2f}%` (Sử dụng Mô hình End Sem {semester_point})")
+                if result_class == "Đúng Hạn (On Time)":
+                    st.balloons()
+                    st.markdown(f"### Kết quả Dự đoán: <span style='color:green'>**{result_class}**</span>", unsafe_allow_html=True)
+                else:
+                    st.markdown(f"### Kết quả Dự đoán: <span style='color:red'>**{result_class}**</span>", unsafe_allow_html=True)
+                
+                st.markdown(f"**Độ Tin cậy:** `{confidence*100:.2f}%` (Sử dụng Mô hình End Sem {semester_point})")
+            else:
+                st.error(f"Lỗi logic từ API: {result.get('message')}")
+        else:
+            st.error(f"Lỗi HTTP {response.status_code}: Không thể kết nối hoặc lỗi server.")
             
-            if result_class == "Không Đúng Hạn (Delayed/Drop)":
-                 st.warning("⚠️ **Khuyến nghị:** Cần có sự can thiệp và hỗ trợ kịp thời để cải thiện tình hình học tập.")
+    except requests.exceptions.ConnectionError:
+        st.error(f"🚨 Lỗi kết nối: Server API Backend (FastAPI) chưa được khởi động hoặc đang chạy ở địa chỉ sai ({API_HOST}:{API_PORT}).")

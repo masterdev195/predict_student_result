@@ -1,9 +1,10 @@
 
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 # Cổng mặc định
-DEFAULT_HOST_PUBLIC = "127.0.0.1"
-DEFAULT_PORT_PUBLIC = 8501
+API_HOST = os.getenv("API_HOST", "127.0.0.1")
+API_PORT = int(os.getenv("API_PORT", 8888))
 # Cấu hình Đường dẫn 
 DATA_DIR = "data"
 MODELS_DIR = "models"

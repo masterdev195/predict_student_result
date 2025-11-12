@@ -30,6 +30,7 @@ Predict_Student_Result/
 │
 ├── src/
 │ ├── Config.py # Cấu hình hằng số: đường dẫn, tên cột, bộ đặc trưng...
+│ ├──main_api.py # hàm backend
 │ ├── model_utils.py # Các hàm hỗ trợ tải/lưu mô hình, tiến hành dự đoán
 │ └── train.py # Script huấn luyện 4 mô hình
 │
@@ -123,6 +124,7 @@ Thành phần:	Công nghệ
 Ngôn ngữ:	Python
 Machine Learning:	scikit-learn (RandomForestClassifier, Pipeline, ColumnTransformer)
 Xử lý Dữ liệu:	pandas, numpy, joblib
+Backend IPA: 
 Giao diện Web:	Streamlit
 Cấu hình:	python-dotenv
 ```
