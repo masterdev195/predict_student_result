@@ -4,14 +4,14 @@ import os
 import sys
 import requests
 from dotenv import load_dotenv
-
+# Thêm thư mục src vào PATH để import
+sys.path.insert(0, os.path.abspath('src'))
+load_dotenv()
 from src.model_utils import load_data, load_model, predict_graduation 
 from src.Config import SEMESTER_POINTS, DATA_FILE_PATH,API_HOST,API_PORT
 
-load_dotenv()
 API_URL = f"http://{API_HOST}:{API_PORT}/predict_graduation"
-# Thêm thư mục src vào PATH để import
-sys.path.insert(0, os.path.abspath('src'))
+
 
 df_ref = load_data(DATA_FILE_PATH)
 MAJOR_LIST = sorted(df_ref['major'].unique().tolist())
@@ -108,7 +108,7 @@ if submitted:
 
     try:
         response = requests.post(API_URL, json=api_request_data)
-        if requests.status_codes == 200:
+        if response.status_code == 200:
             result = response.json()
             if result.get("status") == "success":
                 result_class = result['prediction_class']
